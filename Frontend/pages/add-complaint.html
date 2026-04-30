@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>File a Complaint — ComplainHub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body class="inner-page">
+  <nav class="navbar">
+    <a href="/" class="logo">Complain<span>Hub</span></a>
+    <div class="nav-links">
+      <a href="/pages/complaints.html" class="nav-link">All Complaints</a>
+      <span id="navUser" class="nav-user hidden"></span>
+      <a href="/pages/login.html" class="btn-nav" id="navLogin">Login</a>
+      <button class="btn-nav btn-outline" id="navLogout" style="display:none" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <main class="form-page">
+    <div class="page-header">
+      <a href="/pages/complaints.html" class="back-link">← Back to complaints</a>
+      <h1>File a Complaint</h1>
+      <p>Describe your issue clearly so it can be reviewed and resolved.</p>
+    </div>
+
+    <div class="card form-card">
+      <div id="errorMsg" class="alert alert-error hidden"></div>
+      <div id="successMsg" class="alert alert-success hidden"></div>
+
+      <div class="form-group">
+        <label>Complaint Title <span class="required">*</span></label>
+        <input type="text" id="title" placeholder="Brief summary of the issue" maxlength="120" />
+        <span class="char-count" id="titleCount">0 / 120</span>
+      </div>
+
+      <div class="form-group">
+        <label>Description <span class="required">*</span></label>
+        <textarea id="description" rows="6" placeholder="Provide full details..." maxlength="2000"></textarea>
+        <span class="char-count" id="descCount">0 / 2000</span>
+      </div>
+
+      <div class="form-group">
+        <label>Attach Image <span class="optional">(optional)</span></label>
+        <div class="upload-area" id="uploadArea">
+          <div class="upload-icon">📎</div>
+          <p>Click to upload or drag & drop</p>
+          <small>PNG, JPG, GIF, WebP — Max 5MB</small>
+          <input type="file" id="imageInput" accept="image/*" hidden />
+        </div>
+        <div class="image-preview hidden" id="imagePreview">
+          <img id="previewImg" src="" alt="Preview" />
+          <button class="remove-img" onclick="removeImage()">✕ Remove</button>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <a href="/pages/complaints.html" class="btn-secondary">Cancel</a>
+        <button class="btn-primary" id="submitBtn" onclick="submitComplaint()">Submit Complaint</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/auth.js"></script>
+  <script>
+    if (!getToken()) {
+      alert("Please login to file a complaint.");
+      window.location.href = "/pages/login.html";
+    }
+
+    const user = getUser();
+    if (user) {
+      document.getElementById("navUser").textContent = `Hi, ${user.name}`;
+      document.getElementById("navUser").classList.remove("hidden");
+      document.getElementById("navLogin").style.display = "none";
+      document.getElementById("navLogout").style.display = "inline-block";
+    }
+
+    document.getElementById("title").addEventListener("input", function () {
+      document.getElementById("titleCount").textContent = `${this.value.length} / 120`;
+    });
+    document.getElementById("description").addEventListener("input", function () {
+      document.getElementById("descCount").textContent = `${this.value.length} / 2000`;
+    });
+
+    const uploadArea = document.getElementById("uploadArea");
+    const imageInput = document.getElementById("imageInput");
+
+    uploadArea.addEventListener("click", () => imageInput.click());
+    uploadArea.addEventListener("dragover", (e) => { e.preventDefault(); uploadArea.classList.add("drag-over"); });
+    uploadArea.addEventListener("dragleave", () => uploadArea.classList.remove("drag-over"));
+    uploadArea.addEventListener("drop", (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove("drag-over");
+      if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+    });
+    imageInput.addEventListener("change", () => {
+      if (imageInput.files[0]) handleFile(imageInput.files[0]);
+    });
+
+    function handleFile(file) {
+      if (!file.type.startsWith("image/")) return showError("Only image files allowed.");
+      if (file.size > 5 * 1024 * 1024) return showError("File must be under 5MB.");
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById("previewImg").src = e.target.result;
+        document.getElementById("imagePreview").classList.remove("hidden");
+        uploadArea.classList.add("hidden");
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeImage() {
+      imageInput.value = "";
+      document.getElementById("imagePreview").classList.add("hidden");
+      uploadArea.classList.remove("hidden");
+    }
+
+    function showError(msg) {
+      const el = document.getElementById("errorMsg");
+      el.textContent = msg;
+      el.classList.remove("hidden");
+      document.getElementById("successMsg").classList.add("hidden");
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+
+    function showSuccess(msg) {
+      const el = document.getElementById("successMsg");
+      el.textContent = msg;
+      el.classList.remove("hidden");
+      document.getElementById("errorMsg").classList.add("hidden");
+    }
+
+    async function submitComplaint() {
+      const title = document.getElementById("title").value.trim();
+      const description = document.getElementById("description").value.trim();
+      const file = imageInput.files[0];
+      if (!title || !description) return showError("Title and description are required.");
+
+      const btn = document.getElementById("submitBtn");
+      btn.disabled = true;
+      btn.textContent = "Submitting...";
+
+      try {
+        const formData = new FormData();
+        formData.append("title", title);
+        formData.append("description", description);
+        if (file) formData.append("image", file);
+
+        const res = await fetch("/api/complaints", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${getToken()}` },
+          body: formData,
+        });
+        const data = await res.json();
+        if (!res.ok) return showError(data.message);
+        showSuccess("Complaint submitted! Redirecting...");
+        setTimeout(() => window.location.href = "/pages/complaints.html", 1200);
+      } catch {
+        showError("Network error. Please try again.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Submit Complaint";
+      }
+    }
+  </script>
+</body>
+</html>

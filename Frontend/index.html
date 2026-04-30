@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ComplainHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/" class="logo">Complain<span>Hub</span></a>
+    <div class="nav-links" id="navLinks">
+      <a href="/pages/complaints.html" class="nav-link">All Complaints</a>
+      <span id="navUser" class="nav-user hidden"></span>
+      <a href="/pages/login.html" class="btn-nav" id="navLogin">Login</a>
+      <button class="btn-nav btn-outline" id="navLogout" style="display:none">Logout</button>
+    </div>
+  </nav>
+
+  <main class="hero">
+    <div class="hero-badge">Your Voice Matters</div>
+    <h1 class="hero-title">Report. Track.<br /><em>Resolve.</em></h1>
+    <p class="hero-sub">A transparent platform to file complaints, track their progress, and hold systems accountable.</p>
+    <div class="hero-actions">
+      <a href="/pages/complaints.html" class="btn-primary">View All Complaints</a>
+      <a href="/pages/add-complaint.html" class="btn-secondary" id="heroAdd">File a Complaint</a>
+    </div>
+    <div class="hero-stats" id="heroStats">
+      <div class="stat"><span class="stat-num" id="statTotal">—</span><span class="stat-label">Total Filed</span></div>
+      <div class="stat"><span class="stat-num" id="statPending">—</span><span class="stat-label">Pending</span></div>
+      <div class="stat"><span class="stat-num" id="statResolved">—</span><span class="stat-label">Resolved</span></div>
+    </div>
+  </main>
+
+  <div class="shape s1"></div>
+  <div class="shape s2"></div>
+  <div class="shape s3"></div>
+
+  <script src="/js/auth.js"></script>
+  <script src="/js/main.js"></script>
+</body>
+</html>
