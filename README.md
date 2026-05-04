@@ -2,7 +2,7 @@
 
 A full-stack complaint management web application where users can register, file complaints with image attachments, and track their resolution status in real time.
 
-🔗 **Live Demo:** [complaint-tracker.vercel.app](https://complaint-tracker.vercel.app)  
+
 📂 **GitHub:** [github.com/radhika228/complaint-tracker](https://github.com/radhika228/complaint-tracker)
 
 ---
