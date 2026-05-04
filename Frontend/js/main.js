@@ -1,6 +1,6 @@
 async function loadStats() {
   try {
-    const res = await fetch("/api/complaints");
+    const res = await fetch("https://complaint-tracker-45ts.onrender.com/api/complaints");
     const complaints = await res.json();
     const total = complaints.length;
     const pending = complaints.filter(c => c.status === "Pending").length;

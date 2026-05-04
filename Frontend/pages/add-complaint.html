@@ -64,106 +64,108 @@
 
   <script src="/js/auth.js"></script>
   <script>
-    if (!getToken()) {
-      alert("Please login to file a complaint.");
-      window.location.href = "/pages/login.html";
-    }
+   const API = "https://complaint-tracker-45ts.onrender.com";
 
-    const user = getUser();
-    if (user) {
-      document.getElementById("navUser").textContent = `Hi, ${user.name}`;
-      document.getElementById("navUser").classList.remove("hidden");
-      document.getElementById("navLogin").style.display = "none";
-      document.getElementById("navLogout").style.display = "inline-block";
-    }
+if (!getToken()) {
+  alert("Please login to file a complaint.");
+  window.location.href = "/pages/login.html";
+}
 
-    document.getElementById("title").addEventListener("input", function () {
-      document.getElementById("titleCount").textContent = `${this.value.length} / 120`;
+const user = getUser();
+if (user) {
+  document.getElementById("navUser").textContent = `Hi, ${user.name}`;
+  document.getElementById("navUser").classList.remove("hidden");
+  document.getElementById("navLogin").style.display = "none";
+  document.getElementById("navLogout").style.display = "inline-block";
+}
+
+document.getElementById("title").addEventListener("input", function () {
+  document.getElementById("titleCount").textContent = `${this.value.length} / 120`;
+});
+document.getElementById("description").addEventListener("input", function () {
+  document.getElementById("descCount").textContent = `${this.value.length} / 2000`;
+});
+
+const uploadArea = document.getElementById("uploadArea");
+const imageInput = document.getElementById("imageInput");
+
+uploadArea.addEventListener("click", () => imageInput.click());
+uploadArea.addEventListener("dragover", (e) => { e.preventDefault(); uploadArea.classList.add("drag-over"); });
+uploadArea.addEventListener("dragleave", () => uploadArea.classList.remove("drag-over"));
+uploadArea.addEventListener("drop", (e) => {
+  e.preventDefault();
+  uploadArea.classList.remove("drag-over");
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+imageInput.addEventListener("change", () => {
+  if (imageInput.files[0]) handleFile(imageInput.files[0]);
+});
+
+function handleFile(file) {
+  if (!file.type.startsWith("image/")) return showError("Only image files allowed.");
+  if (file.size > 5 * 1024 * 1024) return showError("File must be under 5MB.");
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    document.getElementById("previewImg").src = e.target.result;
+    document.getElementById("imagePreview").classList.remove("hidden");
+    uploadArea.classList.add("hidden");
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImage() {
+  imageInput.value = "";
+  document.getElementById("imagePreview").classList.add("hidden");
+  uploadArea.classList.remove("hidden");
+}
+
+function showError(msg) {
+  const el = document.getElementById("errorMsg");
+  el.textContent = msg;
+  el.classList.remove("hidden");
+  document.getElementById("successMsg").classList.add("hidden");
+  el.scrollIntoView({ behavior: "smooth" });
+}
+
+function showSuccess(msg) {
+  const el = document.getElementById("successMsg");
+  el.textContent = msg;
+  el.classList.remove("hidden");
+  document.getElementById("errorMsg").classList.add("hidden");
+}
+
+async function submitComplaint() {
+  const title = document.getElementById("title").value.trim();
+  const description = document.getElementById("description").value.trim();
+  const file = imageInput.files[0];
+  if (!title || !description) return showError("Title and description are required.");
+
+  const btn = document.getElementById("submitBtn");
+  btn.disabled = true;
+  btn.textContent = "Submitting...";
+
+  try {
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("description", description);
+    if (file) formData.append("image", file);
+
+    const res = await fetch(`${API}/api/complaints`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${getToken()}` },
+      body: formData,
     });
-    document.getElementById("description").addEventListener("input", function () {
-      document.getElementById("descCount").textContent = `${this.value.length} / 2000`;
-    });
-
-    const uploadArea = document.getElementById("uploadArea");
-    const imageInput = document.getElementById("imageInput");
-
-    uploadArea.addEventListener("click", () => imageInput.click());
-    uploadArea.addEventListener("dragover", (e) => { e.preventDefault(); uploadArea.classList.add("drag-over"); });
-    uploadArea.addEventListener("dragleave", () => uploadArea.classList.remove("drag-over"));
-    uploadArea.addEventListener("drop", (e) => {
-      e.preventDefault();
-      uploadArea.classList.remove("drag-over");
-      if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
-    });
-    imageInput.addEventListener("change", () => {
-      if (imageInput.files[0]) handleFile(imageInput.files[0]);
-    });
-
-    function handleFile(file) {
-      if (!file.type.startsWith("image/")) return showError("Only image files allowed.");
-      if (file.size > 5 * 1024 * 1024) return showError("File must be under 5MB.");
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        document.getElementById("previewImg").src = e.target.result;
-        document.getElementById("imagePreview").classList.remove("hidden");
-        uploadArea.classList.add("hidden");
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function removeImage() {
-      imageInput.value = "";
-      document.getElementById("imagePreview").classList.add("hidden");
-      uploadArea.classList.remove("hidden");
-    }
-
-    function showError(msg) {
-      const el = document.getElementById("errorMsg");
-      el.textContent = msg;
-      el.classList.remove("hidden");
-      document.getElementById("successMsg").classList.add("hidden");
-      el.scrollIntoView({ behavior: "smooth" });
-    }
-
-    function showSuccess(msg) {
-      const el = document.getElementById("successMsg");
-      el.textContent = msg;
-      el.classList.remove("hidden");
-      document.getElementById("errorMsg").classList.add("hidden");
-    }
-
-    async function submitComplaint() {
-      const title = document.getElementById("title").value.trim();
-      const description = document.getElementById("description").value.trim();
-      const file = imageInput.files[0];
-      if (!title || !description) return showError("Title and description are required.");
-
-      const btn = document.getElementById("submitBtn");
-      btn.disabled = true;
-      btn.textContent = "Submitting...";
-
-      try {
-        const formData = new FormData();
-        formData.append("title", title);
-        formData.append("description", description);
-        if (file) formData.append("image", file);
-
-        const res = await fetch("/api/complaints", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${getToken()}` },
-          body: formData,
-        });
-        const data = await res.json();
-        if (!res.ok) return showError(data.message);
-        showSuccess("Complaint submitted! Redirecting...");
-        setTimeout(() => window.location.href = "/pages/complaints.html", 1200);
-      } catch {
-        showError("Network error. Please try again.");
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Submit Complaint";
-      }
-    }
+    const data = await res.json();
+    if (!res.ok) return showError(data.message);
+    showSuccess("Complaint submitted! Redirecting...");
+    setTimeout(() => window.location.href = "/pages/complaints.html", 1200);
+  } catch {
+    showError("Network error. Please try again.");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Submit Complaint";
+  }
+}
   </script>
 </body>
 </html>

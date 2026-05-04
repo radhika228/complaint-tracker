@@ -62,75 +62,77 @@
 
   <script src="/js/auth.js"></script>
   <script>
-    if (getToken()) window.location.href = "/";
+    const API = "https://complaint-tracker-45ts.onrender.com";
 
-    function switchTab(tab) {
-      document.getElementById("loginForm").classList.toggle("hidden", tab !== "login");
-      document.getElementById("signupForm").classList.toggle("hidden", tab !== "signup");
-      document.getElementById("tabLogin").classList.toggle("active", tab === "login");
-      document.getElementById("tabSignup").classList.toggle("active", tab === "signup");
-      clearMessages();
-    }
+if (getToken()) window.location.href = "/";
 
-    function showError(msg) {
-      const el = document.getElementById("errorMsg");
-      el.textContent = msg;
-      el.classList.remove("hidden");
-      document.getElementById("successMsg").classList.add("hidden");
-    }
+function switchTab(tab) {
+  document.getElementById("loginForm").classList.toggle("hidden", tab !== "login");
+  document.getElementById("signupForm").classList.toggle("hidden", tab !== "signup");
+  document.getElementById("tabLogin").classList.toggle("active", tab === "login");
+  document.getElementById("tabSignup").classList.toggle("active", tab === "signup");
+  clearMessages();
+}
 
-    function showSuccess(msg) {
-      const el = document.getElementById("successMsg");
-      el.textContent = msg;
-      el.classList.remove("hidden");
-      document.getElementById("errorMsg").classList.add("hidden");
-    }
+function showError(msg) {
+  const el = document.getElementById("errorMsg");
+  el.textContent = msg;
+  el.classList.remove("hidden");
+  document.getElementById("successMsg").classList.add("hidden");
+}
 
-    function clearMessages() {
-      document.getElementById("errorMsg").classList.add("hidden");
-      document.getElementById("successMsg").classList.add("hidden");
-    }
+function showSuccess(msg) {
+  const el = document.getElementById("successMsg");
+  el.textContent = msg;
+  el.classList.remove("hidden");
+  document.getElementById("errorMsg").classList.add("hidden");
+}
 
-    async function handleLogin() {
-      const email = document.getElementById("loginEmail").value.trim();
-      const password = document.getElementById("loginPassword").value;
-      if (!email || !password) return showError("Please fill all fields.");
-      try {
-        const res = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        });
-        const data = await res.json();
-        if (!res.ok) return showError(data.message);
-        saveAuth(data.token, data.user);
-        showSuccess("Login successful! Redirecting...");
-        setTimeout(() => window.location.href = "/", 800);
-      } catch {
-        showError("Network error. Please try again.");
-      }
-    }
+function clearMessages() {
+  document.getElementById("errorMsg").classList.add("hidden");
+  document.getElementById("successMsg").classList.add("hidden");
+}
 
-    async function handleSignup() {
-      const name = document.getElementById("signupName").value.trim();
-      const email = document.getElementById("signupEmail").value.trim();
-      const password = document.getElementById("signupPassword").value;
-      if (!name || !email || !password) return showError("Please fill all fields.");
-      try {
-        const res = await fetch("/api/auth/signup", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, password }),
-        });
-        const data = await res.json();
-        if (!res.ok) return showError(data.message);
-        saveAuth(data.token, data.user);
-        showSuccess("Account created! Redirecting...");
-        setTimeout(() => window.location.href = "/", 800);
-      } catch {
-        showError("Network error. Please try again.");
-      }
-    }
+async function handleLogin() {
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  if (!email || !password) return showError("Please fill all fields.");
+  try {
+    const res = await fetch(`${API}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) return showError(data.message);
+    saveAuth(data.token, data.user);
+    showSuccess("Login successful! Redirecting...");
+    setTimeout(() => window.location.href = "/", 800);
+  } catch {
+    showError("Network error. Please try again.");
+  }
+}
+
+async function handleSignup() {
+  const name = document.getElementById("signupName").value.trim();
+  const email = document.getElementById("signupEmail").value.trim();
+  const password = document.getElementById("signupPassword").value;
+  if (!name || !email || !password) return showError("Please fill all fields.");
+  try {
+    const res = await fetch(`${API}/api/auth/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) return showError(data.message);
+    saveAuth(data.token, data.user);
+    showSuccess("Account created! Redirecting...");
+    setTimeout(() => window.location.href = "/", 800);
+  } catch {
+    showError("Network error. Please try again.");
+  }
+}
   </script>
 </body>
 </html>
