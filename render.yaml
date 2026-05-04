@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: complaint-tracker-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: MONGO_URI
+        value: mongodb+srv://radhikagupta0891_db_user:ALyBliytpRNMANd6@complaintapp.e90vk9z.mongodb.net/complaintapp?retryWrites=true&w=majority
+      - key: JWT_SECRET
+        value: complaint_tracker_secret_2024
